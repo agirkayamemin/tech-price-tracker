@@ -1,17 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
 
-
 def scrape():
-    print("Scraper çalıştı.")
+    response = requests.get("https://books.toscrape.com/")
+    response.encoding = "utf-8"
+    
+    soup = BeautifulSoup(response.text, "html.parser")
+    
+    books = soup.find_all("article", class_="product_pod")
 
-    with open("data/sample_page.html", "r", encoding="utf-8") as file:
-        html = file.read()
+    for book in books:
+        name = book.find("h3").find("a")["title"]
+        price = book.find("p", class_="price_color").text
 
-    soup = BeautifulSoup(html, "html.parser")
-
-    product = soup.find("h2")
-    price = soup.find("span", class_="price")
-
-    print("Ürün:", product.text.strip())
-    print("Fiyat:", price.text.strip())
+        print(name)
+        print(price)
+        print("----------")
