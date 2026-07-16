@@ -32,6 +32,7 @@ tech_price_tracker/
 - Update product prices automatically
 - Store configuration in a dedicated `config.py` file
 - Display a clean scan summary after each run
+- Handle network and HTTP errors gracefully
 
 ## Upcoming Features
 

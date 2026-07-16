@@ -5,8 +5,15 @@ from config import URL
 from database import get_product, save_product, update_price
 
 def scrape():
-    response = requests.get(URL)
-    response.encoding = "utf-8"
+    try:
+        response = requests.get(URL, timeout=10)
+        response.raise_for_status()
+        response.encoding = "utf-8"
+
+    except requests.RequestException as e:
+        print("\n❌ Web sitesine erişilemedi.")
+        print(f"Detay: {e}")
+        return
     
     soup = BeautifulSoup(response.text, "html.parser")
     
