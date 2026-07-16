@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from logger import logger
 
 from config import URL
 from database import (
@@ -10,6 +11,7 @@ from database import (
 )
 
 def scrape():
+    logger.info("Scan started.")
     try:
         response = requests.get(URL, timeout=10)
         response.raise_for_status()
@@ -18,6 +20,7 @@ def scrape():
     except requests.RequestException as e:
         print("\n❌ Web sitesine erişilemedi.")
         print(f"Detay: {e}")
+        logger.error(f"Request failed: {e}")
         return
     
     soup = BeautifulSoup(response.text, "html.parser")
@@ -38,6 +41,7 @@ def scrape():
 
             new_products += 1
             print(f"Yeni ürün: {name}")
+            logger.info(f"New product added: {name}")
 
         else:
             old_price = product[2]
@@ -49,9 +53,10 @@ def scrape():
                 updated_products += 1
 
                 print(f"Fiyat değişti: {name}")
+                logger.info(f"Price updated: {name} ({old_price} -> {price})")
                 print(f"Eski: {old_price}")
                 print(f"Yeni: {price}")
-                print("----------")   
+                print("----------")
 
     print("\nTarama tamamlandı.")
     print(f"Toplam ürün: {len(books)}")
@@ -60,3 +65,5 @@ def scrape():
 
     if new_products == 0 and updated_products == 0:
         print("✓ Yeni ürün veya fiyat değişikliği bulunamadı.")
+
+    logger.info("Scan completed.")

@@ -34,6 +34,7 @@ tech_price_tracker/
 - Display a clean scan summary after each run
 - Handle network and HTTP errors gracefully
 - Store complete price history
+- Log scan results and errors to `app.log`
 
 ## Upcoming Features
 
