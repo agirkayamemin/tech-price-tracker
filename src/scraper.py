@@ -2,7 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 
 from config import URL
-from database import get_product, save_product, update_price
+from database import (
+    get_product,
+    save_product,
+    update_price,
+    save_price_history,
+)
 
 def scrape():
     try:
@@ -28,7 +33,9 @@ def scrape():
         product = get_product(name)
 
         if product is None:
-            save_product(name, price)
+            product_id = save_product(name, price)
+            save_price_history(product_id, price)
+
             new_products += 1
             print(f"Yeni ürün: {name}")
 
@@ -37,7 +44,10 @@ def scrape():
 
             if old_price != price:
                 update_price(name, price)
+                save_price_history(product[0], price)
+
                 updated_products += 1
+
                 print(f"Fiyat değişti: {name}")
                 print(f"Eski: {old_price}")
                 print(f"Yeni: {price}")

@@ -33,6 +33,7 @@ tech_price_tracker/
 - Store configuration in a dedicated `config.py` file
 - Display a clean scan summary after each run
 - Handle network and HTTP errors gracefully
+- Store complete price history
 
 ## Upcoming Features
 
@@ -41,3 +42,4 @@ tech_price_tracker/
 - Scheduled automatic checks
 - Support multiple websites
 - Error handling and logging
+- Track price history
