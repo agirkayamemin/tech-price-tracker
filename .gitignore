@@ -5,3 +5,4 @@ venv/
 .env
 .vscode/
 data/products.db
+data/app.log
