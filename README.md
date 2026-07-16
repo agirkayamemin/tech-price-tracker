@@ -1,16 +1,17 @@
 # Tech Price Tracker
 
-A Python project that tracks product prices using web scraping.
+A Python project that tracks product prices using web scraping and SQLite.
 
 ## Technologies
 
 - Python
 - Requests
 - BeautifulSoup4
+- SQLite3
 
 ## Project Structure
 
-```
+```text
 tech_price_tracker/
 │
 ├── data/
@@ -22,14 +23,18 @@ tech_price_tracker/
 
 ## Current Features
 
-- Read HTML files
+- Scrape real websites
 - Parse HTML with BeautifulSoup
-- Extract product name
-- Extract product price
+- Extract product names and prices
+- Store products in SQLite
+- Prevent duplicate products
+- Detect price changes
+- Update product prices automatically
 
 ## Upcoming Features
 
-- Scrape real websites
-- Store data with SQLite
 - Track price history
 - Email notifications
+- Configuration file
+- Scheduled automatic checks
+- Support multiple websites

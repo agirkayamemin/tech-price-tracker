@@ -1,6 +1,6 @@
+from database import get_product, save_product, update_price
 import requests
 from bs4 import BeautifulSoup
-from database import save_product
 
 def scrape():
     response = requests.get("https://books.toscrape.com/")
@@ -13,7 +13,19 @@ def scrape():
     for book in books:
         name = book.find("h3").find("a")["title"]
         price = book.find("p", class_="price_color").text
-        save_product(name, price)
+        product = get_product(name)
+
+        if product is None:
+            save_product(name, price)
+            print("Yeni ürün eklendi.")
+        else:
+            old_price = product[2]
+
+            if old_price != price:
+                update_price(name, price)
+                print(f"Fiyat değişti: {old_price} -> {price}")
+            else:
+                print("Fiyat değişmedi.")   
 
         print(name)
         print(price)

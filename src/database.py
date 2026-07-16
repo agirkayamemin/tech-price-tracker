@@ -33,3 +33,30 @@ def save_product(name, price):
         pass
 
     connection.close()
+
+def get_product(name):
+    connection = sqlite3.connect("data/products.db")
+    cursor = connection.cursor()
+
+    cursor.execute(
+        "SELECT * FROM products WHERE name = ?",
+        (name,)
+    )
+
+    product = cursor.fetchone()
+
+    connection.close()
+
+    return product
+
+def update_price(name, price):
+    connection = sqlite3.connect("data/products.db")
+    cursor = connection.cursor()
+
+    cursor.execute(
+        "UPDATE products SET price = ? WHERE name = ?",
+        (price, name)
+    )
+
+    connection.commit()
+    connection.close()
