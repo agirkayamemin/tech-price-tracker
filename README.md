@@ -30,11 +30,13 @@ tech_price_tracker/
 - Prevent duplicate products
 - Detect price changes
 - Update product prices automatically
+- Store configuration in a dedicated `config.py` file
+- Display a clean scan summary after each run
 
 ## Upcoming Features
 
 - Track price history
 - Email notifications
-- Configuration file
 - Scheduled automatic checks
 - Support multiple websites
+- Error handling and logging

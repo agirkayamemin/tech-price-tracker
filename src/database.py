@@ -1,8 +1,8 @@
 import sqlite3
-
+from config import DATABASE_PATH, URL
 
 def connect_db():
-    connection = sqlite3.connect("data/products.db")
+    connection = sqlite3.connect(DATABASE_PATH)
 
     cursor = connection.cursor()
 
