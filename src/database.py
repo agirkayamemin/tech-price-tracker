@@ -1,7 +1,6 @@
 import sqlite3
-from config import DATABASE_PATH, URL
+from src.config import DATABASE_PATH, URL
 from datetime import datetime
-
 
 def connect_db():
     connection = sqlite3.connect(DATABASE_PATH)
@@ -31,24 +30,28 @@ def connect_db():
 
     print("Veritabanı hazır.")
 
-def save_product(name, price):
-    connection = sqlite3.connect(DATABASE_PATH)
+def save_product(name, price, db_path=DATABASE_PATH):
+    connection = sqlite3.connect(db_path)
     cursor = connection.cursor()
 
-    cursor.execute(
-        "INSERT INTO products (name, price) VALUES (?, ?)",
-        (name, price)
-    )
+    try:
+        cursor.execute(
+            "INSERT INTO products (name, price) VALUES (?, ?)",
+            (name, price)
+        )
 
-    product_id = cursor.lastrowid
+        product_id = cursor.lastrowid
 
-    connection.commit()
+        connection.commit()
+    except sqlite3.IntegrityError:
+        product_id = None
+
     connection.close()
 
     return product_id
 
-def get_product(name):
-    connection = sqlite3.connect(DATABASE_PATH)
+def get_product(name, db_path=DATABASE_PATH):
+    connection = sqlite3.connect(db_path)
     cursor = connection.cursor()
 
     cursor.execute(
@@ -62,8 +65,8 @@ def get_product(name):
 
     return product
 
-def update_price(name, price):
-    connection = sqlite3.connect(DATABASE_PATH)
+def update_price(name, price, db_path=DATABASE_PATH):
+    connection = sqlite3.connect(db_path)
     cursor = connection.cursor()
 
     cursor.execute(
@@ -74,8 +77,8 @@ def update_price(name, price):
     connection.commit()
     connection.close()
 
-def save_price_history(product_id, price):
-    connection = sqlite3.connect(DATABASE_PATH)
+def save_price_history(product_id, price, db_path=DATABASE_PATH):
+    connection = sqlite3.connect(db_path)
     cursor = connection.cursor()
 
     cursor.execute(
@@ -83,7 +86,11 @@ def save_price_history(product_id, price):
         INSERT INTO price_history (product_id, price, checked_at)
         VALUES (?, ?, ?)
         """,
-        (product_id, price, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        (
+            product_id,
+            price,
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
     )
 
     connection.commit()

@@ -8,6 +8,7 @@ A Python project that tracks product prices using web scraping and SQLite.
 - Requests
 - BeautifulSoup4
 - SQLite3
+- Pytest
 
 ## Project Structure
 
@@ -35,6 +36,11 @@ tech_price_tracker/
 - Handle network and HTTP errors gracefully
 - Store complete price history
 - Log scan results and errors to `app.log`
+- Unit tests with pytest
+- Test database operations
+- Test product scraping
+- Test price change detection
+- Test price history tracking
 
 ## Upcoming Features
 

@@ -1,16 +1,20 @@
 import requests
 from bs4 import BeautifulSoup
-from logger import logger
+from src.logger import logger
 
-from config import URL
-from database import (
+from src.config import URL
+from src.database import (
     get_product,
     save_product,
     update_price,
     save_price_history,
 )
 
-def scrape():
+def scrape(database_path=None):
+    if database_path is None:
+        from src.config import DATABASE_PATH
+        database_path = DATABASE_PATH
+
     logger.info("Scan started.")
     try:
         response = requests.get(URL, timeout=10)
@@ -33,11 +37,11 @@ def scrape():
     for book in books:
         name = book.find("h3").find("a")["title"]
         price = book.find("p", class_="price_color").text
-        product = get_product(name)
+        product = get_product(name, database_path)
 
         if product is None:
-            product_id = save_product(name, price)
-            save_price_history(product_id, price)
+            product_id = save_product(name, price, database_path)
+            save_price_history(product_id, price, database_path)
 
             new_products += 1
             print(f"Yeni ürün: {name}")
@@ -47,8 +51,8 @@ def scrape():
             old_price = product[2]
 
             if old_price != price:
-                update_price(name, price)
-                save_price_history(product[0], price)
+                update_price(name, price, database_path)
+                save_price_history(product[0], price, database_path)
 
                 updated_products += 1
 
