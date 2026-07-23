@@ -1,6 +1,6 @@
 # Tech Price Tracker
 
-A Python project that tracks product prices using web scraping and SQLite.
+A Python application that scrapes product prices, stores price history, detects changes, and visualizes historical price data.
 
 ## Technologies
 
@@ -8,45 +8,76 @@ A Python project that tracks product prices using web scraping and SQLite.
 - Requests
 - BeautifulSoup4
 - SQLite3
+- Matplotlib
 - Pytest
+
+## Features
+
+- Scrape product names and prices from a website
+- Store products in SQLite
+- Prevent duplicate products
+- Detect and update price changes
+- Store complete price history
+- Display price history charts
+- Handle HTTP and network errors
+- Log application events
+- Unit tests for database, scraper, and visualization
 
 ## Project Structure
 
 ```text
 tech_price_tracker/
-│
 ├── data/
 ├── src/
+│   ├── config.py
+│   ├── database.py
+│   ├── logger.py
+│   ├── main.py
+│   ├── scraper.py
+│   └── visualization.py
 ├── tests/
+├── pytest.ini
+├── requirements.txt
 ├── README.md
 └── .gitignore
 ```
 
-## Current Features
+## Installation
 
-- Scrape real websites
-- Parse HTML with BeautifulSoup
-- Extract product names and prices
-- Store products in SQLite
-- Prevent duplicate products
-- Detect price changes
-- Update product prices automatically
-- Store configuration in a dedicated `config.py` file
-- Display a clean scan summary after each run
-- Handle network and HTTP errors gracefully
-- Store complete price history
-- Log scan results and errors to `app.log`
-- Unit tests with pytest
-- Test database operations
-- Test product scraping
-- Test price change detection
-- Test price history tracking
+```bash
+git clone https://github.com/agirkayamemin/tech-price-tracker.git
+cd tech-price-tracker
 
-## Upcoming Features
+python -m venv venv
+source venv/Scripts/activate
 
-- Track price history
-- Email notifications
-- Scheduled automatic checks
+pip install -r requirements.txt
+```
+
+## Usage
+
+```bash
+python -m src.main
+```
+
+The application scans products, updates changed prices, and lets the user select a product to display its price-history chart.
+
+## Tests
+
+```bash
+pytest
+```
+
+Current test suite:
+
+```text
+11 passed
+```
+
+## Future Improvements
+
 - Support multiple websites
-- Error handling and logging
-- Track price history
+- Command-line interface
+- Email notifications
+- Scheduled automatic scans
+- Deployment to a continuously running server

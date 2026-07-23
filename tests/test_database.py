@@ -3,7 +3,9 @@ from src.database import (
     save_product,
     get_product,
     update_price,
-    save_price_history
+    save_price_history,
+    get_price_history,
+    get_all_products
 )
 
 def test_save_product(tmp_path):
@@ -187,3 +189,96 @@ def test_save_price_history(tmp_path):
     assert history[1] == product_id
     assert history[2] == "£10.00"
     assert history[3] is not None
+
+def test_get_price_history(tmp_path):
+    test_db = tmp_path / "test.db"
+
+    connection = sqlite3.connect(test_db)
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        CREATE TABLE products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE,
+            price TEXT
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE price_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_id INTEGER,
+            price TEXT,
+            checked_at TEXT,
+            FOREIGN KEY(product_id) REFERENCES products(id)
+        )
+    """)
+
+    connection.commit()
+    connection.close()
+
+    product_id = save_product(
+        "Test Product",
+        "£10.00",
+        test_db
+    )
+
+    save_price_history(
+        product_id,
+        "£10.00",
+        test_db
+    )
+
+    save_price_history(
+        product_id,
+        "£20.00",
+        test_db
+    )
+
+    history = get_price_history(
+        product_id,
+        test_db
+    )
+
+    assert len(history) == 2
+    assert history[0][0] == "£10.00"
+    assert history[1][0] == "£20.00"
+    assert history[0][1] is not None
+    assert history[1][1] is not None
+
+def test_get_all_products(tmp_path):
+    test_db = tmp_path / "test.db"
+
+    connection = sqlite3.connect(test_db)
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        CREATE TABLE products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE,
+            price TEXT
+        )
+    """)
+
+    connection.commit()
+    connection.close()
+
+    save_product(
+        "Product A",
+        "£10.00",
+        test_db
+    )
+
+    save_product(
+        "Product B",
+        "£20.00",
+        test_db
+    )
+
+    products = get_all_products(test_db)
+
+    assert len(products) == 2
+    assert products[0][1] == "Product A"
+    assert products[0][2] == "£10.00"
+    assert products[1][1] == "Product B"
+    assert products[1][2] == "£20.00"

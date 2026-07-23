@@ -95,3 +95,42 @@ def save_price_history(product_id, price, db_path=DATABASE_PATH):
 
     connection.commit()
     connection.close()
+
+def get_price_history(product_id, db_path=DATABASE_PATH):
+    connection = sqlite3.connect(db_path)
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT price, checked_at
+        FROM price_history
+        WHERE product_id = ?
+        ORDER BY checked_at ASC
+        """,
+        (product_id,)
+    )
+
+    history = cursor.fetchall()
+
+    connection.close()
+
+    return history
+
+def get_all_products(db_path=DATABASE_PATH):
+    connection = sqlite3.connect(db_path)
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT id, name, price
+        FROM products
+        ORDER BY name ASC
+        """
+    )
+
+    products = cursor.fetchall()
+
+    connection.close()
+
+    return products
+
