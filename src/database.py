@@ -1,6 +1,8 @@
 import sqlite3
-from src.config import DATABASE_PATH, URL
 from datetime import datetime
+
+from src.config import DATABASE_PATH
+
 
 def connect_db():
     connection = sqlite3.connect(DATABASE_PATH)

@@ -1,3 +1,5 @@
+import argparse
+
 from src.scraper import scrape
 from src.database import (
     connect_db,
@@ -7,27 +9,60 @@ from src.database import (
 from src.visualization import plot_price_history
 
 
-def main():
-    print("Tech Price Tracker")
+def build_parser():
+    parser = argparse.ArgumentParser(
+        description="Ürün fiyatlarını takip eder."
+    )
 
+    subparsers = parser.add_subparsers(
+        dest="command",
+        title="komutlar"
+    )
+
+    subparsers.add_parser(
+        "scan",
+        help="Siteyi tarar ve fiyatları günceller."
+    )
+    subparsers.add_parser(
+        "products",
+        help="Kayıtlı ürünleri listeler."
+    )
+    subparsers.add_parser(
+        "history",
+        help="Bir ürünün fiyat geçmişini gösterir."
+    )
+
+    return parser
+
+
+def run_scan():
     connect_db()
-
     scrape()
 
+
+def run_products():
+    connect_db()
     products = get_all_products()
 
     if not products:
         print("\nVeritabanında ürün bulunamadı.")
-        return
+        return []
 
     print("\n--------------------------------")
-    print("FİYAT GEÇMİŞİ")
+    print("ÜRÜNLER")
     print("--------------------------------")
 
     for index, product in enumerate(products, start=1):
-        print(
-            f"{index}. {product[1]} - {product[2]}"
-        )
+        print(f"{index}. {product[1]} - {product[2]}")
+
+    return products
+
+
+def run_history():
+    products = run_products()
+
+    if not products:
+        return
 
     print("\nGrafiğini görmek istediğiniz ürün numarasını girin.")
     print("Çıkmak için Enter'a basın.")
@@ -50,16 +85,28 @@ def main():
         return
 
     selected_product = products[choice - 1]
-
     product_id = selected_product[0]
     product_name = selected_product[1]
 
     history = get_price_history(product_id)
 
-    plot_price_history(
-        history,
-        product_name
-    )
+    plot_price_history(history, product_name)
+
+
+def main(argv=None):
+    print("Tech Price Tracker")
+
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    if args.command == "scan":
+        run_scan()
+    elif args.command == "products":
+        run_products()
+    elif args.command == "history":
+        run_history()
+    else:
+        parser.print_help()
 
 
 if __name__ == "__main__":
