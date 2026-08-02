@@ -1,13 +1,15 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.config import DATABASE_PATH
+from src.models import ProductData
 
 SCHEMA_VERSION = 2
 
 
 class LegacyDatabaseError(RuntimeError):
     pass
+
 
 def open_connection(
     db_path=DATABASE_PATH,
@@ -82,6 +84,174 @@ def connect_db(db_path=DATABASE_PATH):
         )
 
     print("Veritabanı hazır.")
+
+
+def upsert_product(
+    product: ProductData,
+    db_path=DATABASE_PATH,
+    *,
+    checked_at: str | None = None,
+) -> str:
+    if checked_at is None:
+        checked_at = datetime.now(
+            timezone.utc
+        ).isoformat(timespec="seconds")
+
+    with open_connection(db_path) as connection:
+        existing_product = connection.execute(
+            """
+            SELECT
+                id,
+                current_price_minor,
+                currency
+            FROM products
+            WHERE source = ?
+              AND product_url = ?
+            """,
+            (
+                product.source,
+                product.product_url,
+            ),
+        ).fetchone()
+
+        if existing_product is not None:
+            (
+                product_id,
+                current_price_minor,
+                current_currency,
+            ) = existing_product
+
+            price_changed = (
+                current_price_minor
+                != product.price_minor
+                or current_currency
+                != product.currency
+            )
+
+            connection.execute(
+                """
+                UPDATE products
+                SET
+                    name = ?,
+                    current_price_minor = ?,
+                    currency = ?
+                WHERE id = ?
+                """,
+                (
+                    product.name,
+                    product.price_minor,
+                    product.currency,
+                    product_id,
+                ),
+            )
+
+            if not price_changed:
+                return "unchanged"
+
+            connection.execute(
+                """
+                INSERT INTO price_history (
+                    product_id,
+                    price_minor,
+                    currency,
+                    checked_at
+                )
+                VALUES (?, ?, ?, ?)
+                """,
+                (
+                    product_id,
+                    product.price_minor,
+                    product.currency,
+                    checked_at,
+                ),
+            )
+
+            return "updated"
+
+        cursor = connection.execute(
+            """
+            INSERT INTO products (
+                source,
+                product_url,
+                name,
+                current_price_minor,
+                currency
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                product.source,
+                product.product_url,
+                product.name,
+                product.price_minor,
+                product.currency,
+            ),
+        )
+
+        product_id = cursor.lastrowid
+
+        connection.execute(
+            """
+            INSERT INTO price_history (
+                product_id,
+                price_minor,
+                currency,
+                checked_at
+            )
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                product_id,
+                product.price_minor,
+                product.currency,
+                checked_at,
+            ),
+        )
+
+    return "created"
+
+
+def list_products(
+    db_path=DATABASE_PATH,
+) -> list[tuple[int, str, str, str, int, str]]:
+    with open_connection(db_path) as connection:
+        products = connection.execute(
+            """
+            SELECT
+                id,
+                source,
+                product_url,
+                name,
+                current_price_minor,
+                currency
+            FROM products
+            ORDER BY name ASC
+            """
+        ).fetchall()
+
+    return products
+
+
+def list_price_history(
+    product_id: int,
+    db_path=DATABASE_PATH,
+) -> list[tuple[int, str, str]]:
+    with open_connection(db_path) as connection:
+        history = connection.execute(
+            """
+            SELECT
+                price_minor,
+                currency,
+                checked_at
+            FROM price_history
+            WHERE product_id = ?
+            ORDER BY checked_at ASC, id ASC
+            """,
+            (product_id,),
+        ).fetchall()
+
+    return history
+
 
 def save_product(name, price, db_path=DATABASE_PATH):
     connection = sqlite3.connect(db_path)
