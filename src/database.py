@@ -45,9 +45,9 @@ def connect_db(db_path=DATABASE_PATH):
             and current_version != SCHEMA_VERSION
         ):
             raise LegacyDatabaseError(
-                "Legacy database schema detected. "
-                "Delete the local database and "
-                "run scan again."
+                "Eski veritabanı şeması algılandı. "
+                "data/products.db dosyasını silin "
+                "ve scan komutunu yeniden çalıştırın."
             )
 
         connection.executescript(
@@ -251,109 +251,3 @@ def list_price_history(
         ).fetchall()
 
     return history
-
-
-def save_product(name, price, db_path=DATABASE_PATH):
-    connection = sqlite3.connect(db_path)
-    cursor = connection.cursor()
-
-    try:
-        cursor.execute(
-            "INSERT INTO products (name, price) VALUES (?, ?)",
-            (name, price)
-        )
-
-        product_id = cursor.lastrowid
-
-        connection.commit()
-    except sqlite3.IntegrityError:
-        product_id = None
-
-    connection.close()
-
-    return product_id
-
-def get_product(name, db_path=DATABASE_PATH):
-    connection = sqlite3.connect(db_path)
-    cursor = connection.cursor()
-
-    cursor.execute(
-        "SELECT * FROM products WHERE name = ?",
-        (name,)
-    )
-
-    product = cursor.fetchone()
-
-    connection.close()
-
-    return product
-
-def update_price(name, price, db_path=DATABASE_PATH):
-    connection = sqlite3.connect(db_path)
-    cursor = connection.cursor()
-
-    cursor.execute(
-        "UPDATE products SET price = ? WHERE name = ?",
-        (price, name)
-    )
-
-    connection.commit()
-    connection.close()
-
-def save_price_history(product_id, price, db_path=DATABASE_PATH):
-    connection = sqlite3.connect(db_path)
-    cursor = connection.cursor()
-
-    cursor.execute(
-        """
-        INSERT INTO price_history (product_id, price, checked_at)
-        VALUES (?, ?, ?)
-        """,
-        (
-            product_id,
-            price,
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        )
-    )
-
-    connection.commit()
-    connection.close()
-
-def get_price_history(product_id, db_path=DATABASE_PATH):
-    connection = sqlite3.connect(db_path)
-    cursor = connection.cursor()
-
-    cursor.execute(
-        """
-        SELECT price, checked_at
-        FROM price_history
-        WHERE product_id = ?
-        ORDER BY checked_at ASC
-        """,
-        (product_id,)
-    )
-
-    history = cursor.fetchall()
-
-    connection.close()
-
-    return history
-
-def get_all_products(db_path=DATABASE_PATH):
-    connection = sqlite3.connect(db_path)
-    cursor = connection.cursor()
-
-    cursor.execute(
-        """
-        SELECT id, name, price
-        FROM products
-        ORDER BY name ASC
-        """
-    )
-
-    products = cursor.fetchall()
-
-    connection.close()
-
-    return products
-

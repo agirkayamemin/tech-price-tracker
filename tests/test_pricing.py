@@ -1,6 +1,6 @@
 import pytest
 
-from src.pricing import parse_price
+from src.pricing import format_price, parse_price
 
 
 @pytest.mark.parametrize(
@@ -31,3 +31,33 @@ def test_parse_gbp_price(price_text, expected):
 def test_parse_price_rejects_invalid_values(price_text):
     with pytest.raises(ValueError):
         parse_price(price_text)
+
+
+@pytest.mark.parametrize(
+    ("price_minor", "currency", "expected"),
+    [
+        (5177, "GBP", "£51.77"),
+        (0, "GBP", "£0.00"),
+        (1234, "USD", "12.34 USD"),
+    ],
+)
+def test_format_price(
+    price_minor,
+    currency,
+    expected,
+):
+    assert format_price(
+        price_minor,
+        currency,
+    ) == expected
+
+
+@pytest.mark.parametrize(
+    "price_minor",
+    [-1, 10.5, True, None],
+)
+def test_format_price_rejects_invalid_minor_units(
+    price_minor,
+):
+    with pytest.raises(ValueError):
+        format_price(price_minor, "GBP")

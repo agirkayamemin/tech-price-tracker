@@ -1,40 +1,79 @@
+from datetime import timedelta
+from unittest.mock import patch
+
 from src.visualization import plot_price_history
 
 
-def test_plot_price_history(monkeypatch):
+def test_plot_price_history_uses_minor_units_and_utc():
     history = [
-        ("£10.00", "2026-07-17 10:00:00"),
-        ("£15.00", "2026-07-18 10:00:00"),
-        ("£20.00", "2026-07-19 10:00:00"),
+        (
+            1000,
+            "GBP",
+            "2026-08-02T10:00:00+00:00",
+        ),
+        (
+            1550,
+            "GBP",
+            "2026-08-02T11:00:00+00:00",
+        ),
     ]
 
-    def mock_show():
-        pass
+    with (
+        patch(
+            "src.visualization.plt.plot"
+        ) as mock_plot,
+        patch("src.visualization.plt.show"),
+    ):
+        plot_price_history(
+            history,
+            "Test Product",
+        )
 
-    monkeypatch.setattr(
-        "src.visualization.plt.show",
-        mock_show
-    )
+    dates, prices = mock_plot.call_args.args
 
-    plot_price_history(
-        history,
-        "Test Product"
-    )
+    assert prices == [10.0, 15.5]
+    assert dates[0].utcoffset() == timedelta(0)
 
-def test_plot_price_history_empty(monkeypatch, capsys):
-    def mock_show():
-        pass
 
-    monkeypatch.setattr(
-        "src.visualization.plt.show",
-        mock_show
-    )
-
+def test_plot_price_history_empty(capsys):
     plot_price_history(
         [],
-        "Test Product"
+        "Test Product",
     )
 
-    captured = capsys.readouterr()
+    output = capsys.readouterr().out
 
-    assert "Bu ürün için fiyat geçmişi bulunamadı." in captured.out
+    assert (
+        "Bu ürün için fiyat geçmişi bulunamadı."
+        in output
+    )
+
+
+def test_plot_price_history_rejects_mixed_currencies(
+    capsys,
+):
+    history = [
+        (
+            1000,
+            "GBP",
+            "2026-08-02T10:00:00+00:00",
+        ),
+        (
+            1500,
+            "USD",
+            "2026-08-02T11:00:00+00:00",
+        ),
+    ]
+
+    with patch(
+        "src.visualization.plt.show"
+    ) as mock_show:
+        plot_price_history(
+            history,
+            "Test Product",
+        )
+
+    output = capsys.readouterr().out
+
+    assert "Farklı para birimleri" in output
+    mock_show.assert_not_called()

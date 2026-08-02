@@ -103,7 +103,7 @@ def test_connect_db_rejects_legacy_schema(
 
     with pytest.raises(
         LegacyDatabaseError,
-        match="Legacy database schema",
+        match="Eski veritabanı şeması",
     ):
         connect_db(test_db)
 
