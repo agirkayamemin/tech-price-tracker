@@ -3,32 +3,83 @@ from datetime import datetime
 
 from src.config import DATABASE_PATH
 
+SCHEMA_VERSION = 2
 
-def connect_db():
-    connection = sqlite3.connect(DATABASE_PATH)
 
-    cursor = connection.cursor()
+class LegacyDatabaseError(RuntimeError):
+    pass
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS products (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT UNIQUE,
-            price TEXT
+def open_connection(
+    db_path=DATABASE_PATH,
+) -> sqlite3.Connection:
+    connection = sqlite3.connect(db_path)
+    connection.execute(
+        "PRAGMA foreign_keys = ON"
+    )
+
+    return connection
+
+
+def connect_db(db_path=DATABASE_PATH):
+    with open_connection(db_path) as connection:
+        current_version = connection.execute(
+            "PRAGMA user_version"
+        ).fetchone()[0]
+
+        existing_tables = connection.execute(
+            """
+            SELECT name
+            FROM sqlite_master
+            WHERE type = 'table'
+              AND name IN (
+                  'products',
+                  'price_history'
+              )
+            """
+        ).fetchall()
+
+        if (
+            existing_tables
+            and current_version != SCHEMA_VERSION
+        ):
+            raise LegacyDatabaseError(
+                "Legacy database schema detected. "
+                "Delete the local database and "
+                "run scan again."
+            )
+
+        connection.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS products (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                source TEXT NOT NULL,
+                product_url TEXT NOT NULL,
+                name TEXT NOT NULL,
+                current_price_minor INTEGER NOT NULL,
+                currency TEXT NOT NULL,
+                UNIQUE(source, product_url)
+            );
+
+            CREATE TABLE IF NOT EXISTS price_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id INTEGER NOT NULL,
+                price_minor INTEGER NOT NULL,
+                currency TEXT NOT NULL,
+                checked_at TEXT NOT NULL,
+                FOREIGN KEY (product_id)
+                    REFERENCES products(id)
+                    ON DELETE CASCADE
+            );
+
+            CREATE INDEX IF NOT EXISTS
+                idx_price_history_product_id
+            ON price_history(product_id);
+            """
         )
-    """)
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS price_history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            product_id INTEGER,
-            price TEXT,
-            checked_at TEXT,
-            FOREIGN KEY(product_id) REFERENCES products(id)
+        connection.execute(
+            f"PRAGMA user_version = {SCHEMA_VERSION}"
         )
-    """)
-
-    connection.commit()
-    connection.close()
 
     print("Veritabanı hazır.")
 
