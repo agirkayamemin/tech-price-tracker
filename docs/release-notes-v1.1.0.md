@@ -37,5 +37,5 @@ create a clean version 2 database.
 
 - Full automated test suite passes locally on Python 3.14.
 - Network behavior is tested with mocks; tests do not contact the live site.
-- Live scanning should be verified once against a newly created version 2
-  database before publishing the release.
+- A live two-page scan against a newly created version 2 database stored 40
+  products with no failed pages.

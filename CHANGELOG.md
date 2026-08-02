@@ -7,6 +7,8 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-02
+
 ### Added
 
 - Decimal-based price parsing and integer minor-unit storage
@@ -49,5 +51,6 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Price-change detection and historical charts
 - Application logging and automated tests
 
-[Unreleased]: https://github.com/agirkayamemin/tech-price-tracker/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/agirkayamemin/tech-price-tracker/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/agirkayamemin/tech-price-tracker/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/agirkayamemin/tech-price-tracker/releases/tag/v1.0.0
