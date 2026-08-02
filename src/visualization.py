@@ -1,45 +1,52 @@
-import matplotlib.pyplot as plt
 from datetime import datetime
 
+import matplotlib.pyplot as plt
 
-def plot_price_history(history, product_name):
+
+def plot_price_history(
+    history: list[tuple[int, str, str]],
+    product_name: str,
+) -> None:
     if not history:
-        print("Bu ürün için fiyat geçmişi bulunamadı.")
+        print(
+            "Bu ürün için fiyat geçmişi bulunamadı."
+        )
         return
 
-    prices = []
-    dates = []
+    currencies = {
+        currency
+        for _, currency, _ in history
+    }
 
-    for price, checked_at in history:
-        price_value = float(
-            price.replace("£", "").strip()
+    if len(currencies) != 1:
+        print(
+            "Farklı para birimleri aynı grafikte "
+            "gösterilemez."
         )
+        return
 
-        date_value = datetime.strptime(
-            checked_at,
-            "%Y-%m-%d %H:%M:%S"
-        )
-
-        prices.append(price_value)
-        dates.append(date_value)
+    prices = [
+        price_minor / 100
+        for price_minor, _, _ in history
+    ]
+    dates = [
+        datetime.fromisoformat(checked_at)
+        for _, _, checked_at in history
+    ]
+    currency = currencies.pop()
 
     plt.figure(figsize=(10, 5))
-
     plt.plot(
         dates,
         prices,
-        marker="o"
+        marker="o",
     )
-
     plt.title(
         f"Price History - {product_name}"
     )
-
     plt.xlabel("Date")
-    plt.ylabel("Price (£)")
-
+    plt.ylabel(f"Price ({currency})")
     plt.xticks(rotation=45)
-
     plt.tight_layout()
-
     plt.show()
+    plt.close()
